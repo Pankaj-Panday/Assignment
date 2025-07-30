@@ -1,0 +1,29 @@
+.container {
+  /* padding: 0 1rem; */
+  width: 100%;
+  /* max-width: 1440px; */
+  margin: 0 auto;
+}
+
+.error {
+  padding: 1rem 1.5rem;
+  margin: 1.5rem auto;
+  max-width: 600px;
+  background-color: #ffe0e0;
+  border: 1px solid #ff6b6b;
+  border-left: 6px solid #ff4d4d;
+  border-radius: 8px;
+  color: #b00020;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.error h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.error p {
+  margin: 0;
+  font-size: 1rem;
+}
