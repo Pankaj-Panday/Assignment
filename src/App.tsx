@@ -1,4 +1,4 @@
-import { ArtWorksTable } from "./components/ArtWorksTable"
+import { ArtWorksTable } from "./components/ArtWorksTable";
 
 function App() {
   return (
@@ -8,4 +8,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

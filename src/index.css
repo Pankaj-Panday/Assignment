@@ -27,3 +27,17 @@
   margin: 0;
   font-size: 1rem;
 }
+
+i {
+  cursor: pointer;
+}
+
+.inputBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.p-button {
+  align-self: flex-end;
+}
