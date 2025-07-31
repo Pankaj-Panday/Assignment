@@ -1,7 +1,7 @@
 import { DataTable, type DataTablePageEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { filterArtworkData } from "./utils/utils";
+import { filterArtworkData, modifyPageRowsSelectionMap } from "./utils/utils";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { InputNumber } from "primereact/inputnumber";
 import { Button } from "primereact/button";
@@ -14,9 +14,13 @@ export const ArtWorksTable = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<ArtWork[]>([]);
+
   const selectedIDs = useRef<Set<number>>(new Set([]));
   const opRef = useRef<OverlayPanel>(null);
-  const rowCountsToSelectOnPageLoad = useRef<number>(0);
+  const pageRowsMapping = useRef<Map<number, number>>(new Map());
+  const selectCountForCurrentPage = useRef<number>(undefined);
+
+  const rowsPerPage = 12;
 
   const onPage = async (event: DataTablePageEvent) => {
     const pageToFetch = (event.page ?? 0) + 1;
@@ -38,6 +42,7 @@ export const ArtWorksTable = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputValue) return;
+
     // add IDS to be selected to selectedIDs
     const idsToAdd = getIDsToAdd(artWorkData, inputValue);
     idsToAdd.forEach((id) => selectedIDs.current.add(id));
@@ -45,8 +50,13 @@ export const ArtWorksTable = () => {
     // select rows with given IDs
     selectRowsByIDs(artWorkData);
 
+    if (inputValue > rowsPerPage) {
+      // modify the map
+      modifyPageRowsSelectionMap(inputValue - 12, page + 1, rowsPerPage, pageRowsMapping.current);
+    }
+
     // modify the rows count to select on next page load
-    rowCountsToSelectOnPageLoad.current = inputValue - idsToAdd.length;
+    // rowCountsToSelectOnPageLoad.current = inputValue - idsToAdd.length;
 
     setInputValue(null);
     opRef.current?.hide();
@@ -84,7 +94,6 @@ export const ArtWorksTable = () => {
     };
 
     fetchArtworkData();
-    // selectRowsByIDs();
 
     return () => {
       // abort the previous api call
@@ -92,17 +101,20 @@ export const ArtWorksTable = () => {
     };
   }, [page]);
 
-  // select rows on page load
+  // Get select count from map when page changes
   useEffect(() => {
-    if (rowCountsToSelectOnPageLoad.current > 0) {
-      // add IDS to be selected to selectedIDs
-      const idsToAdd = getIDsToAdd(artWorkData, rowCountsToSelectOnPageLoad.current);
+    selectCountForCurrentPage.current = pageRowsMapping.current.get(page);
+    pageRowsMapping.current.delete(page);
+  }, [page]);
+  
+  // add IDs to selectedIds based on select count for current page
+  useEffect(() => {
+    if (selectCountForCurrentPage.current) {
+      const idsToAdd = getIDsToAdd(artWorkData, selectCountForCurrentPage.current);
       idsToAdd.forEach((id) => selectedIDs.current.add(id));
-      // modify value for next load
-      rowCountsToSelectOnPageLoad.current = rowCountsToSelectOnPageLoad.current - idsToAdd.length;
     }
     selectRowsByIDs(artWorkData);
-  }, [artWorkData, selectRowsByIDs, getIDsToAdd]);
+  }, [page, artWorkData, getIDsToAdd, selectRowsByIDs]);
 
   if (errorMsg) {
     return (
@@ -120,14 +132,14 @@ export const ArtWorksTable = () => {
         // metaKeySelection={false}
         selectionMode="multiple"
         value={artWorkData}
-        first={(page - 1) * 12}
+        first={(page - 1) * rowsPerPage}
         dataKey="id"
         paginator
         totalRecords={totalRecords}
         onPage={onPage}
         loading={loading}
         tableStyle={{ minWidth: "50rem" }}
-        rows={12}
+        rows={rowsPerPage}
         pageLinkSize={5}
         lazy
         selection={selectedRows}

@@ -24,3 +24,17 @@ export async function fetchArtWorkData(page: number): Promise<{ totalRecords: nu
     }
   }
 }
+
+export function modifyPageRowsSelectionMap(
+  input: number,
+  startPage: number,
+  rowsPerPage: number,
+  map: Map<number, number>
+) {
+  const pageCount = Math.floor(input / rowsPerPage);
+  for (let i = startPage; i <= startPage + pageCount; i++) {
+    map.set(i, input > rowsPerPage ? rowsPerPage : input);
+    input = input - map.get(i)!;
+  }
+  return map;
+}
