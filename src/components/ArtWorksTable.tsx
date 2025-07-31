@@ -55,9 +55,6 @@ export const ArtWorksTable = () => {
       modifyPageRowsSelectionMap(inputValue - 12, page + 1, rowsPerPage, pageRowsMapping.current);
     }
 
-    // modify the rows count to select on next page load
-    // rowCountsToSelectOnPageLoad.current = inputValue - idsToAdd.length;
-
     setInputValue(null);
     opRef.current?.hide();
   };
